@@ -192,8 +192,14 @@
 
         function filterByTag(tag) {
             selectedTag = tag;
-            document.querySelectorAll('.tags span').forEach(el => el.classList.remove('tag-selected'));
-            document.querySelector(`.tags span:contains("${tag}")`).classList.add('tag-selected');
+            const tags = document.querySelectorAll('.tags span');
+            tags.forEach(tagElement => {
+                if (tagElement.innerText === tag) {
+                    tagElement.classList.add('tag-selected');
+                } else {
+                    tagElement.classList.remove('tag-selected');
+                }
+            });
             displayThumbnails();
         }
 
