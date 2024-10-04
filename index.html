@@ -11,6 +11,9 @@
             padding: 20px;
             background-color: #f0f0f0;
         }
+        #mainContent {
+            transition: filter 0.3s ease;
+        }
         h1 {
             text-align: center;
             color: #333;
@@ -92,6 +95,7 @@
             justify-content: center;
             align-items: center;
             display: none;
+            z-index: 10;
         }
         .video-modal-content {
             position: relative;
@@ -100,6 +104,7 @@
             border-radius: 10px;
             width: 80%;
             max-width: 800px;
+            z-index: 11;
         }
         .video-modal video {
             width: 100%;
@@ -126,20 +131,24 @@
 </head>
 <body>
 
-    <h1>Central Content Pool <span>(CCP)</span></h1>
+    <!-- Main Content Wrapper -->
+    <div id="mainContent">
+        <h1>Central Content Pool <span>(CCP)</span></h1>
 
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search for videos..." oninput="searchVideos()">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for videos..." oninput="searchVideos()">
+        </div>
+
+        <div class="tags" id="tagContainer">
+            <!-- Tags will be populated here -->
+        </div>
+
+        <div class="video-list" id="videoList">
+            <!-- Thumbnails will be displayed here -->
+        </div>
     </div>
 
-    <div class="tags" id="tagContainer">
-        <!-- Tags will be populated here -->
-    </div>
-
-    <div class="video-list" id="videoList">
-        <!-- Thumbnails will be displayed here -->
-    </div>
-
+    <!-- Video Modal -->
     <div class="video-modal" id="videoModal">
         <div class="video-modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -153,9 +162,17 @@
         let selectedTag = 'Central'; // Default tag
 
         // Fetch JSON data from a .json file
-        fetch('Videos/List.json')
-            .then(response => response.json())
+        fetch('videos.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
+                if (!data || !Array.isArray(data)) {
+                    throw new Error('Invalid JSON structure');
+                }
                 videoData = data;
                 displayTags();
                 displayThumbnails();
@@ -221,13 +238,13 @@
 
             document.getElementById('videoPlayer').src = video.url;
             document.getElementById('videoModal').style.display = 'flex';
-            document.body.style.filter = 'blur(5px)';
+            document.getElementById('mainContent').style.filter = 'blur(5px)'; // Blur the main content only
         }
 
         function closeModal() {
             document.getElementById('videoModal').style.display = 'none';
             document.getElementById('videoPlayer').src = '';
-            document.body.style.filter = 'none';
+            document.getElementById('mainContent').style.filter = 'none';
         }
 
         function toggleFullscreen() {
