@@ -1,1 +1,19 @@
+[
+    {
+        "id": "1",
+        "name": "Sam",
+        "description": "This is the first video.",
+        "thumbnail": "https://via.placeholder.com/200",
+        "url": "video1.mp4",
+        "tags": ["Sam Content", "Music"]
+    },
+    {
+        "id": "2",
+        "name": "Video 2",
+        "description": "This is the second video.",
+        "thumbnail": "https://via.placeholder.com/200",
+        "url": "video2.mp4",
+        "tags": ["Central", "Tutorial"]
+    }
+]
 
