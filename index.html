@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Content Pool (CCP)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tags {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tags span {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .tag-selected {
+            background-color: #007bff;
+            color: white;
+        }
+        .video-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .video-item {
+            margin: 10px;
+            text-align: center;
+            width: 200px;
+        }
+        .video-item img {
+            width: 100%;
+            cursor: pointer;
+        }
+        .video-item h3 {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .video-page {
+            display: none;
+        }
+        .related-videos {
+            margin-top: 20px;
+        }
+        .related-videos h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .related-videos ul {
+            list-style: none;
+            padding: 0;
+        }
+        .related-videos ul li {
+            cursor: pointer;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Central Content Pool (CCP)</h1>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search for videos...">
+    </div>
+
+    <div class="tags" id="tagContainer">
+        <!-- Tags will be populated here -->
+    </div>
+
+    <div class="video-list" id="videoList">
+        <!-- Thumbnails will be displayed here -->
+    </div>
+
+    <!-- Video Player Page -->
+    <div class="video-page" id="videoPage">
+        <h2 id="videoTitle"></h2>
+        <video id="videoPlayer" width="640" controls></video>
+        <p id="videoDescription"></p>
+
+        <div class="related-videos">
+            <h3>Related Videos</h3>
+            <ul id="relatedVideosList">
+                <!-- Related videos will be listed here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sample JSON data, replace this with actual file fetching
+        const videoData = [
+            {
+                "id": "1",
+                "name": "Video 1",
+                "description": "This is the first video.",
+                "thumbnail": "https://via.placeholder.com/200",
+                "url": "video1.mp4",
+                "tags": ["Central", "Tech"]
+            },
+            {
+                "id": "2",
+                "name": "Video 2",
+                "description": "This is the second video.",
+                "thumbnail": "https://via.placeholder.com/200",
+                "url": "video2.mp4",
+                "tags": ["Central", "Tutorial"]
+            },
+            {
+                "id": "3",
+                "name": "Video 3",
+                "description": "This is the third video.",
+                "thumbnail": "https://via.placeholder.com/200",
+                "url": "video3.mp4",
+                "tags": ["Fun", "Tutorial"]
+            }
+        ];
+
+        let selectedTag = 'Central'; // Default tag
+
+        function displayTags() {
+            const tagContainer = document.getElementById('tagContainer');
+            const allTags = new Set();
+            videoData.forEach(video => video.tags.forEach(tag => allTags.add(tag)));
+
+            allTags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.innerText = tag;
+                tagElement.style.backgroundColor = getRandomColor();
+                tagElement.onclick = () => filterByTag(tag);
+                if (tag === selectedTag) {
+                    tagElement.classList.add('tag-selected');
+                }
+                tagContainer.appendChild(tagElement);
+            });
+        }
+
+        function displayThumbnails() {
+            const videoList = document.getElementById('videoList');
+            videoList.innerHTML = ''; // Clear previous thumbnails
+            videoData
+                .filter(video => video.tags.includes(selectedTag))
+                .forEach(video => {
+                    const videoItem = document.createElement('div');
+                    videoItem.classList.add('video-item');
+                    videoItem.innerHTML = `
+                        <img src="${video.thumbnail}" alt="${video.name}" onclick="openVideo('${video.id}')">
+                        <h3>${video.name}</h3>
+                    `;
+                    videoList.appendChild(videoItem);
+                });
+        }
+
+        function openVideo(videoId) {
+            const video = videoData.find(v => v.id === videoId);
+            if (!video) return;
+
+            document.getElementById('videoTitle').innerText = video.name;
+            document.getElementById('videoDescription').innerText = video.description;
+            document.getElementById('videoPlayer').src = video.url;
+
+            displayRelatedVideos(video.tags);
+            document.getElementById('videoPage').style.display = 'block';
+        }
+
+        function displayRelatedVideos(tags) {
+            const relatedVideosList = document.getElementById('relatedVideosList');
+            relatedVideosList.innerHTML = ''; // Clear previous related videos
+            videoData
+                .filter(video => video.tags.some(tag => tags.includes(tag)) && video.name !== document.getElementById('videoTitle').innerText)
+                .forEach(video => {
+                    const relatedVideoItem = document.createElement('li');
+                    relatedVideoItem.innerText = video.name;
+                    relatedVideoItem.onclick = () => openVideo(video.id);
+                    relatedVideosList.appendChild(relatedVideoItem);
+                });
+        }
+
+        function filterByTag(tag) {
+            selectedTag = tag;
+            document.querySelectorAll('.tags span').forEach(el => el.classList.remove('tag-selected'));
+            document.querySelector(`.tags span:contains("${tag}")`).classList.add('tag-selected');
+            displayThumbnails();
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Initialize page
+        displayTags();
+        displayThumbnails();
+
+    </script>
+
+</body>
+</html>
