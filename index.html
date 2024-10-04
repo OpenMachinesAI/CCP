@@ -9,13 +9,22 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
+            background-color: #f0f0f0;
         }
         h1 {
             text-align: center;
+            color: #333;
         }
         .search-bar {
             margin-bottom: 20px;
             text-align: center;
+        }
+        #searchInput {
+            padding: 10px;
+            width: 50%;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
         .tags {
             text-align: center;
@@ -24,13 +33,20 @@
         .tags span {
             display: inline-block;
             margin: 5px;
-            padding: 5px 10px;
+            padding: 10px 15px;
             border-radius: 15px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tags span:hover {
+            background-color: #007bff;
+            color: white;
+            transform: scale(1.1);
         }
         .tag-selected {
             background-color: #007bff;
             color: white;
+            transform: scale(1.2);
         }
         .video-list {
             display: flex;
@@ -41,14 +57,24 @@
             margin: 10px;
             text-align: center;
             width: 200px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .video-item:hover {
+            transform: translateY(-5px);
         }
         .video-item img {
             width: 100%;
             cursor: pointer;
+            border-radius: 5px;
         }
         .video-item h3 {
             font-size: 16px;
             margin-top: 10px;
+            color: #333;
         }
         .video-page {
             display: none;
@@ -76,7 +102,7 @@
     <h1>Central Content Pool (CCP)</h1>
 
     <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search for videos...">
+        <input type="text" id="searchInput" placeholder="Search for videos..." oninput="searchVideos()">
     </div>
 
     <div class="tags" id="tagContainer">
@@ -85,20 +111,6 @@
 
     <div class="video-list" id="videoList">
         <!-- Thumbnails will be displayed here -->
-    </div>
-
-    <!-- Video Player Page -->
-    <div class="video-page" id="videoPage">
-        <h2 id="videoTitle"></h2>
-        <video id="videoPlayer" width="640" controls></video>
-        <p id="videoDescription"></p>
-
-        <div class="related-videos">
-            <h3>Related Videos</h3>
-            <ul id="relatedVideosList">
-                <!-- Related videos will be listed here -->
-            </ul>
-        </div>
     </div>
 
     <script>
@@ -134,6 +146,7 @@
 
         function displayTags() {
             const tagContainer = document.getElementById('tagContainer');
+            tagContainer.innerHTML = ''; // Clear previous tags
             const allTags = new Set();
             videoData.forEach(video => video.tags.forEach(tag => allTags.add(tag)));
 
@@ -153,7 +166,7 @@
             const videoList = document.getElementById('videoList');
             videoList.innerHTML = ''; // Clear previous thumbnails
             videoData
-                .filter(video => video.tags.includes(selectedTag))
+                .filter(video => video.tags.includes(selectedTag) && video.name.toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()))
                 .forEach(video => {
                     const videoItem = document.createElement('div');
                     videoItem.classList.add('video-item');
@@ -165,29 +178,8 @@
                 });
         }
 
-        function openVideo(videoId) {
-            const video = videoData.find(v => v.id === videoId);
-            if (!video) return;
-
-            document.getElementById('videoTitle').innerText = video.name;
-            document.getElementById('videoDescription').innerText = video.description;
-            document.getElementById('videoPlayer').src = video.url;
-
-            displayRelatedVideos(video.tags);
-            document.getElementById('videoPage').style.display = 'block';
-        }
-
-        function displayRelatedVideos(tags) {
-            const relatedVideosList = document.getElementById('relatedVideosList');
-            relatedVideosList.innerHTML = ''; // Clear previous related videos
-            videoData
-                .filter(video => video.tags.some(tag => tags.includes(tag)) && video.name !== document.getElementById('videoTitle').innerText)
-                .forEach(video => {
-                    const relatedVideoItem = document.createElement('li');
-                    relatedVideoItem.innerText = video.name;
-                    relatedVideoItem.onclick = () => openVideo(video.id);
-                    relatedVideosList.appendChild(relatedVideoItem);
-                });
+        function searchVideos() {
+            displayThumbnails();
         }
 
         function filterByTag(tag) {
@@ -196,8 +188,10 @@
             tags.forEach(tagElement => {
                 if (tagElement.innerText === tag) {
                     tagElement.classList.add('tag-selected');
+                    tagElement.style.transform = 'scale(1.2)';
                 } else {
                     tagElement.classList.remove('tag-selected');
+                    tagElement.style.transform = 'scale(1)';
                 }
             });
             displayThumbnails();
@@ -215,7 +209,6 @@
         // Initialize page
         displayTags();
         displayThumbnails();
-
     </script>
 
 </body>
