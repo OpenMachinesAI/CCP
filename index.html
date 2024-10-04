@@ -15,6 +15,11 @@
             text-align: center;
             color: #333;
         }
+        h1 span {
+            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
         .search-bar {
             margin-bottom: 20px;
             text-align: center;
@@ -76,30 +81,52 @@
             margin-top: 10px;
             color: #333;
         }
-        .video-page {
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             display: none;
         }
-        .related-videos {
-            margin-top: 20px;
+        .video-modal-content {
+            position: relative;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
         }
-        .related-videos h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
+        .video-modal video {
+            width: 100%;
+            border-radius: 10px;
         }
-        .related-videos ul {
-            list-style: none;
-            padding: 0;
-        }
-        .related-videos ul li {
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             cursor: pointer;
-            margin-bottom: 10px;
-            color: #007bff;
+            font-size: 24px;
+            color: #333;
+        }
+        .fullscreen-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Central Content Pool (CCP)</h1>
+    <h1>Central Content Pool <span>(CCP)</span></h1>
 
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search for videos..." oninput="searchVideos()">
@@ -113,36 +140,27 @@
         <!-- Thumbnails will be displayed here -->
     </div>
 
-    <script>
-        // Sample JSON data, replace this with actual file fetching
-        const videoData = [
-            {
-                "id": "1",
-                "name": "Video 1",
-                "description": "This is the first video.",
-                "thumbnail": "https://via.placeholder.com/200",
-                "url": "video1.mp4",
-                "tags": ["Central", "Tech"]
-            },
-            {
-                "id": "2",
-                "name": "Video 2",
-                "description": "This is the second video.",
-                "thumbnail": "https://via.placeholder.com/200",
-                "url": "video2.mp4",
-                "tags": ["Central", "Tutorial"]
-            },
-            {
-                "id": "3",
-                "name": "Video 3",
-                "description": "This is the third video.",
-                "thumbnail": "https://via.placeholder.com/200",
-                "url": "video3.mp4",
-                "tags": ["Fun", "Tutorial"]
-            }
-        ];
+    <div class="video-modal" id="videoModal">
+        <div class="video-modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <video id="videoPlayer" controls></video>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">Full Screen</button>
+        </div>
+    </div>
 
+    <script>
+        let videoData = [];
         let selectedTag = 'Central'; // Default tag
+
+        // Fetch JSON data from a .json file
+        fetch('videos.json')
+            .then(response => response.json())
+            .then(data => {
+                videoData = data;
+                displayTags();
+                displayThumbnails();
+            })
+            .catch(error => console.error('Error fetching video data:', error));
 
         function displayTags() {
             const tagContainer = document.getElementById('tagContainer');
@@ -197,6 +215,34 @@
             displayThumbnails();
         }
 
+        function openVideo(videoId) {
+            const video = videoData.find(v => v.id === videoId);
+            if (!video) return;
+
+            document.getElementById('videoPlayer').src = video.url;
+            document.getElementById('videoModal').style.display = 'flex';
+            document.body.style.filter = 'blur(5px)';
+        }
+
+        function closeModal() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.getElementById('videoPlayer').src = '';
+            document.body.style.filter = 'none';
+        }
+
+        function toggleFullscreen() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.mozRequestFullScreen) { // Firefox
+                videoPlayer.mozRequestFullScreen();
+            } else if (videoPlayer.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) { // IE/Edge
+                videoPlayer.msRequestFullscreen();
+            }
+        }
+
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
             let color = '#';
@@ -205,10 +251,6 @@
             }
             return color;
         }
-
-        // Initialize page
-        displayTags();
-        displayThumbnails();
     </script>
 
 </body>
